@@ -1,0 +1,20 @@
+{
+  "name": "stream-deletion",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js --help",
+    "lint": "node ./node_modules/.bin/prettier *.js --write",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "luxon": "^1.16.0",
+    "prettier": "^1.19.1",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.4",
+    "yargs": "^13.2.4"
+  }
+}

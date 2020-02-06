@@ -11,9 +11,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bluebird": "^3.7.2",
     "luxon": "^1.16.0",
     "moment": "^2.24.0",
     "prettier": "^1.19.1",
+    "promise-fs": "^2.1.1",
     "request": "^2.88.0",
     "request-promise": "^4.2.4",
     "yargs": "^13.2.4"

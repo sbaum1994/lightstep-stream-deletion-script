@@ -31,3 +31,6 @@ to complete checking for inactive streams. At this point only inactive streams w
 Finally run:
 ```node index.js delete-streams LightStep stephanie-test --api-key <api-key> --dry-run false --resume```
 To delete the streams after you've checked them out/checked with people who own them, etc.
+
+### Additional options:
+To filter for streams with only a particular service (or other string in their query) run with the `--service <your string/service>` flag.

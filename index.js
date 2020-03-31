@@ -24,6 +24,21 @@ yargs.command(
         describe: "Lightstep project"
       }),
       yargs.options({
+        service: {
+          alias: "f",
+          demandOption: false,
+          default: "",
+          describe:
+            "Service string to use as a filter in the query of the stream. For example, if I only wanted to look at streams for service 'my-service' I would set this to 'my-service'",
+          type: "string"
+        },
+        "api-env": {
+          alias: "e",
+          demandOption: false,
+          default: "",
+          describe: "Set environment suffix of API to hit.",
+          type: "string"
+        },
         days: {
           alias: "d",
           demandOption: false,
@@ -62,6 +77,12 @@ yargs.command(
 
     let youngest = moment();
     let oldest = moment().subtract(argv.days, "days");
+
+    if (argv.apiEnv) {
+      // for lightstep specific environments (using apiEnv) add a dash
+      // since yargs doesn't deal with dashes well
+      argv.apiEnv = `-${argv.apiEnv}`;
+    }
 
     if (argv.resume) {
       return resume(argv, youngest, oldest);
@@ -190,6 +211,9 @@ function formatError(err) {
   if (!ret.message && !ret.statusCode) {
     ret.err = err;
   }
+  if (err.options && err.options.uri) {
+    ret.uri = err.options.uri;
+  }
   return ret;
 }
 
@@ -290,7 +314,7 @@ function deleteStreamRequest(args, streamId) {
   };
 
   return request.delete(
-    `https://api.lightstep.com/public/v0.1/${args.org}/projects/${args.project}/searches/${streamId}`,
+    `https://api${args.apiEnv}.lightstep.com/public/v0.1/${args.org}/projects/${args.project}/searches/${streamId}`,
     opts
   );
 }
@@ -306,6 +330,13 @@ function excludeStream(s, youngest, oldest) {
   return protected || recentlyCreated;
 }
 
+function isInService(s, service) {
+  if (service === "") {
+    return true;
+  }
+  return s.attributes.query.includes(service);
+}
+
 function listStreamsRequest(args, youngest, oldest) {
   const opts = {
     headers: {
@@ -316,12 +347,13 @@ function listStreamsRequest(args, youngest, oldest) {
 
   return request
     .get(
-      `https://api.lightstep.com/public/v0.1/${args.org}/projects/${args.project}/searches`,
+      `https://api${args.apiEnv}.lightstep.com/public/v0.1/${args.org}/projects/${args.project}/searches`,
       opts
     )
     .then(res => {
       return res.data
         .filter(r => !excludeStream(r, youngest, oldest))
+        .filter(r => isInService(r, args.service))
         .map(s => s.id);
     });
 }
@@ -336,7 +368,9 @@ function timeseriesRequest(args, streamId, youngest, oldest) {
 
   return request
     .get(
-      `https://api.lightstep.com/public/v0.1/${args.org}/projects/${
+      `https://api${args.apiEnv}.lightstep.com/public/v0.1/${
+        args.org
+      }/projects/${
         args.project
       }/searches/${streamId}/timeseries?include-ops-counts=1&include-error-counts=0&youngest-time=${youngest.toISOString()}&oldest-time=${oldest.toISOString()}&resolution-ms=36000000`,
       opts
